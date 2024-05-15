@@ -204,7 +204,6 @@ class MotorControl(App):
                 return
             value = (value + 100) * 180 / 200
             self.query_one(RightMotorProgressBar).update(progress=value)
-            # self.query_one(VerticalScroll).mount(Label(f"Donation for ${value} received!"))
             self.query_one(RightMotorInput).value = ""
             send_command(f"MR{text_value}")
 
@@ -216,7 +215,6 @@ class MotorControl(App):
                 return
             value = (value + 100) * 180 / 200
             self.query_one(LeftMotorProgressBar).update(progress=value)
-            # self.query_one(VerticalScroll).mount(Label(f"Donation for ${value} received!"))
             self.query_one(LeftMotorInput).value = ""
             send_command(f"ML{text_value}")
 
@@ -260,10 +258,10 @@ class MotorControl(App):
             motor, dir = button_id.split("_")
             text_display.update(f"Rotating {motor} {dir.lower()}")
             if dir == 'CW':
-                send_command(f"{motor},1,1000")
+                send_command(f"{motor},1,500")
                 read_response()
             else:
-                send_command(f"{motor},1,-1000")
+                send_command(f"{motor},1,-500")
                 read_response()
 
 
