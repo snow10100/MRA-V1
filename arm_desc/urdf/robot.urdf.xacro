@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<robot name="robotic_arm">
+<robot name="robotic_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
 <link name="base_link">
 <visual>
 <origin xyz="0.0024960130633573558712 0.12804634114627058694 -0.01108280622936548554" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://meshes/base_link.stl"/>
+<mesh filename="package://arm_desc/meshes/base_link.stl"/>
 </geometry>
 <material name="base_link_material">
 <color rgba="0.61568627450980395466 0.81176470588235294379 0.92941176470588238168 1.0"/>
@@ -13,7 +13,7 @@
 <collision>
 <origin xyz="0.0024960130633573558712 0.12804634114627058694 -0.01108280622936548554" rpy="0 -0 0" />
 <geometry>
-<mesh filename="package://meshes/base_link.stl"/>
+<mesh filename="package://arm_desc/meshes/base_link.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -27,7 +27,7 @@
 <visual>
 <origin xyz="0.058066221705191579938 -0.0010000035544516496996 0.035111317800536695488" rpy="-1.570796326794896558 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_1.stl"/>
+<mesh filename="package://arm_desc/meshes/link_1.stl"/>
 </geometry>
 <material name="link_1_material">
 <color rgba="0.49803921568627451677 0.49803921568627451677 0.49803921568627451677 1.0"/>
@@ -36,7 +36,7 @@
 <collision>
 <origin xyz="0.058066221705191579938 -0.0010000035544516496996 0.035111317800536695488" rpy="-1.570796326794896558 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_1.stl"/>
+<mesh filename="package://arm_desc/meshes/link_1.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -50,7 +50,7 @@
 <visual>
 <origin xyz="0.058066756826188309359 0.00099999999999915933045 -0.043111317800536799738" rpy="1.570796326794896558 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_2.stl"/>
+<mesh filename="package://arm_desc/meshes/link_2.stl"/>
 </geometry>
 <material name="link_2_material">
 <color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
@@ -59,7 +59,7 @@
 <collision>
 <origin xyz="0.058066756826188309359 0.00099999999999915933045 -0.043111317800536799738" rpy="1.570796326794896558 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_2.stl"/>
+<mesh filename="package://arm_desc/meshes/link_2.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -73,7 +73,7 @@
 <visual>
 <origin xyz="-0.3889332431738120599 -0.0010000000000015309143 0.042111321354989406096" rpy="-1.570796326794896558 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_3.stl"/>
+<mesh filename="package://arm_desc/meshes/link_3.stl"/>
 </geometry>
 <material name="link_3_material">
 <color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
@@ -82,7 +82,7 @@
 <collision>
 <origin xyz="-0.3889332431738120599 -0.0010000000000015309143 0.042111321354989406096" rpy="-1.570796326794896558 -1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_3.stl"/>
+<mesh filename="package://arm_desc/meshes/link_3.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -96,7 +96,7 @@
 <visual>
 <origin xyz="-0.38893324317381300359 0.0010000000000021103119 -0.043161592520954500385" rpy="1.570796326794896558 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_4.stl"/>
+<mesh filename="package://arm_desc/meshes/link_4.stl"/>
 </geometry>
 <material name="link_4_material">
 <color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
@@ -105,7 +105,7 @@
 <collision>
 <origin xyz="-0.38893324317381300359 0.0010000000000021103119 -0.043161592520954500385" rpy="1.570796326794896558 1.570796326794896558 0" />
 <geometry>
-<mesh filename="package://meshes/link_4.stl"/>
+<mesh filename="package://arm_desc/meshes/link_4.stl"/>
 </geometry>
 </collision>
 <inertial>
@@ -119,7 +119,7 @@
 <visual>
 <origin xyz="0.085161592520954398911 0.0010125586032828232108 -0.42993324317381198529" rpy="1.570796326794896558 1.3040595762004301237e-18 6.4830711884908311151e-22" />
 <geometry>
-<mesh filename="package://meshes/link_5.stl"/>
+<mesh filename="package://arm_desc/meshes/link_5.stl"/>
 </geometry>
 <material name="link_5_material">
 <color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
@@ -128,7 +128,7 @@
 <collision>
 <origin xyz="0.085161592520954398911 0.0010125586032828232108 -0.42993324317381198529" rpy="1.570796326794896558 1.3040595762004301237e-18 6.4830711884908311151e-22" />
 <geometry>
-<mesh filename="package://meshes/link_5.stl"/>
+<mesh filename="package://arm_desc/meshes/link_5.stl"/>
 </geometry>
 </collision>
 <inertial>
