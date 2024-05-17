@@ -1,0 +1,9 @@
+<library path="arm_6dof">
+  <class name="arm_6dof/Arm6DOF"
+         type="arm_6dof::Arm6DOF"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ros2_control hardware interface.
+    </description>
+  </class>
+</library>
