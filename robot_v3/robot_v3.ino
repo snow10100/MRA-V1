@@ -1,7 +1,7 @@
 #include <AccelStepper.h>
 #include <Servo.h>
 
-#define DEBUG 0    // SET TO 0 OUT TO REMOVE TRACES
+#define DEBUG 1    // SET TO 0 OUT TO REMOVE TRACES
 
 #if DEBUG
 #define D_SerialBegin(...) Serial.begin(__VA_ARGS__)
@@ -19,16 +19,16 @@ const int numMotors = 6;
 
 // Define motor pins
 const int motorPins[numMotors][2] = {
-  {2, 3},   // Motor 1: STEP pin 2, DIR pin 3
+  {A0, A1},   // Motor 1: STEP pin 2, DIR pin 3
   {4, 5},   // Motor 2: STEP pin 4, DIR pin 5
-  {6, 7},   // Motor 3: STEP pin 6, DIR pin 7
-  {8, 9},   // Motor 4: STEP pin 8, DIR pin 9
-  {10, 11}, // Motor 5: STEP pin 10, DIR pin 11
-  {12, 13}  // Motor 6: STEP pin 12, DIR pin 13
+  {2, 3},   // Motor 3: STEP pin 14, DIR pin 15
+  {A4, A5},   // Motor 4: STEP pin 16, DIR pin 17
+  {A2, A3}, // Motor 5: STEP pin 18, DIR pin 19
+  {6, 7},  // Motor 6: STEP pin 20, DIR pin 21
 };
 
-const int servoClosePosition = 10; // min   0
-const int servoOpenPosition = 175; // max 180
+const int servoClosePosition = 30; // min   0
+const int servoOpenPosition = 165; // max 180
 
 // [Pi, -Pi] in joint space. (400 microsteps/rev * 38.4 ratio = 15360 steps/rev = (7680 - (-7680)))
 #define JOINT_WITHIN_BOUNDS(x) constrain(x, -7680, 7680) 
@@ -61,11 +61,12 @@ void setup() {
   for (int i = 0; i < numMotors; i++) {
     motors[i].setMaxSpeed(1000);
     motors[i].setAcceleration(500);
+    motors[i].setCurrentPosition(0L);
   }
-  servo.attach(A0); 
+  servo.attach(11); 
 
-  rightMotor.attach(A1);
-  leftMotor.attach(A2);
+  rightMotor.attach(9);
+  leftMotor.attach(10);
 }
 
 void loop() {
@@ -103,7 +104,7 @@ void executeMotorCommand(String command) {
     String motorMoveCommand = "M" + String(i+1) + ",1,";
     String motorMoveToCommand = "M" + String(i+1) + ",2,";
     String readMotorStateCommand  = "M" + String(i+1) + ",3";
-    int arg = command.substring(5).toInt();
+    long int arg = command.substring(5).toInt();
 
     if (command.startsWith(motorMoveCommand + "STOP")) { // M1,1,1000
       motors[i].stop(); 
@@ -142,6 +143,6 @@ void executeMotorCommand(String command) {
 void motorRun(Servo motor, int speed) {
   int pwm = MOTOR_WITHIN_BOUNDS(map(speed, -100, 100, 0, 180));
   motor.write(pwm);
-  // D_println(speed);
-  D_println(pwm);
+  D_println("speed: " + String(speed));
+  D_println("pwm: " + String(pwm));
 }
