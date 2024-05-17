@@ -9,31 +9,27 @@ import os
 
 # pygame.init()
 # pygame.joystick.init()
-# print(f"number of joysticks connected: {pygame.joystick.get_count()}")
+# # print(f"number of joysticks connected: {pygame.joystick.get_count()}")
 # joystick = pygame.joystick.Joystick(0)
 # joystick.init()
-
+#
 # motor_commands = {
-#     "x": ("M1", 0),
-#     "circle": ("M2", 1),
-#     "square": ("M3", 2),
-#     "triangle": ("M4", 3),
-#     "r2": ("M6", None),
-#     "l1": ("M7", 4),
-#     "r1": ("M5", 5),
-#     "l2": (None, 6),
+#     "l1": ("ML-20", 4),
+#     "r1": ("MR-20", 5),
+#     "l2": ("ML20", 6),
+#     "r2": ("MR20", 7),
 # }
 
 # Setup Serial connection to Arduino (update port and baudrate according to your setup)
-arduino = serial.Serial(port="/dev/ttyACM0", baudrate=9600, timeout=1)
-# arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=9600, timeout=1)
+# arduino = serial.Serial(port="/dev/ttyACM0", baudrate=9600, timeout=1)
+arduino = serial.Serial(port="/dev/ttyUSB0", baudrate=9600, timeout=1)
 time.sleep(0.5)  # Wait for the connection to establish
 
 start_time = time.time()  # Record initial time when the application starts
 
 def get_next_log_filename():
     for i in range(100):  # Limit to 100 files
-        filename = f"logs_{i:02}.txt"
+        filename = f"log_{i:02}.txt"
         if not os.path.exists(filename):
             return filename
     raise Exception("Log file limit reached. Please clear some log files.")
@@ -73,18 +69,11 @@ def replay_log_reverse(file_path):
         #     command = command.split(",")[1]
         # send_command(command)
         arduino.write(f"{command}\n".encode())
-        time.sleep(float(duration))  # Adjust delay as needed for realistic replay speed
-
-
-# def send_command(command):
-#     relative_time = time.time() - start_time  # Calculate time elapsed since start
-#     arduino.write(f"{command}\n".encode())
-#     with open("logs.txt", "a") as file:
-#         file.write(f"{relative_time:.2f} seconds: {command}\n")
+        time.sleep(float(duration))  
 
 def read_response():
     if arduino.in_waiting:
-        response = arduino.readline().decode()
+        response = ''.join(line.decode() for line in arduino.readlines())
         return response
     return ""
 
@@ -114,6 +103,9 @@ class RightMotorProgressBar(ProgressBar):
 
 class LeftMotorProgressBar(ProgressBar):
     """A widget to display left motor value"""
+
+class LogVerticalScroll(VerticalScroll):
+    """A widget to display logs"""
 
 class MotorControl(App):
     # CSS_PATH = "motor_control.css"
@@ -157,10 +149,9 @@ class MotorControl(App):
                 RightMotorInput(placeholder="angle"),
                 Button("Move right wheels", id="right_motor"),
             ),
-            VerticalScroll(
+            LogVerticalScroll(
                 Button("Start Recording", id="start_recording"),
                 Button("Stop Recording", id="stop_recording"),
-                *[Button(f"Log {i:02}", id=f"log_{i:02}") for i in range(100) if os.path.exists(f"logs_{i:02}.txt")],
                 Button("Replay Log", id="replay_log"),
                 Button("Replay Reverse", id="replay_reverse"),
                 Button("Stop All Motors", id="stop_all", variant="error"),
@@ -168,6 +159,7 @@ class MotorControl(App):
                 Label("Response from arduino"),
                 ResponseDisplay("Response..."),
                 DS4Display("DS4 not connected."),
+                *[Button(f"Log {i:02}", id=f"log_{i:02}") for i in range(100) if os.path.exists(f"log_{i:02}.txt")],
             ),
         )
         yield Footer()
@@ -182,7 +174,8 @@ class MotorControl(App):
         if button_id == "stop_all":
             text_display.update("Stopping all motors")
             for i in range(1, 7):
-                send_command(f"M{i}STOP")
+                send_command(f"M{i},1,STOP")
+            response_display.update(read_response)
 
         if button_id == "gripper":
             text_value = self.query_one(GripperInput).value
@@ -194,6 +187,7 @@ class MotorControl(App):
             # self.query_one(VerticalScroll).mount(Label(f"Donation for ${value} received!"))
             self.query_one(GripperInput).value = ""
             send_command(f"G{text_value}")
+            time.sleep(0.1)
             response_display.update(read_response())
 
         if button_id == "right_motor":
@@ -206,6 +200,8 @@ class MotorControl(App):
             self.query_one(RightMotorProgressBar).update(progress=value)
             self.query_one(RightMotorInput).value = ""
             send_command(f"MR{text_value}")
+            time.sleep(0.1)
+            response_display.update(read_response())
 
         if button_id == "left_motor":
             text_value = self.query_one(LeftMotorInput).value
@@ -217,20 +213,23 @@ class MotorControl(App):
             self.query_one(LeftMotorProgressBar).update(progress=value)
             self.query_one(LeftMotorInput).value = ""
             send_command(f"ML{text_value}")
+            time.sleep(0.1)
+            response_display.update(read_response())
 
         elif button_id.startswith("log_"):
             log_number = button_id.split("_")[1]
-            current_log_file = f"logs_{log_number}.txt"
+            current_log_file = f"log_{log_number}.txt"
             text_display.update(f"Selected log file: {current_log_file}")
 
         elif button_id == "start_recording":
             current_log_file = get_next_log_filename()
             with open(current_log_file, 'w'):
                 pass
-            start_time = time.time()  # Reset start time for new log
+            start_time = time.time() 
             text_display.update("Recording started")
             filename = current_log_file[:-4]
-            self.mount(Button(filename.replace('_', ' '), id=filename))
+            self.mount()
+            self.query_one(LogVerticalScroll).mount(Button(filename.replace('_', ' ').capitalize(), id=filename))
 
         elif button_id == "stop_recording":
             current_log_file = None
@@ -250,19 +249,15 @@ class MotorControl(App):
                 replay_log_reverse(current_log_file)
                 text_display.update("Replaying log in reverse... Done!")
 
-        # elif button_id.startswith('M7_'):
-        #     text_display.update("Gripper...")
-        #     send_command(button_id.replace('_', ''))
-
         elif button_id.startswith("M"):
             motor, dir = button_id.split("_")
             text_display.update(f"Rotating {motor} {dir.lower()}")
             if dir == 'CW':
                 send_command(f"{motor},1,500")
-                read_response()
+                response_display.update(read_response())
             else:
                 send_command(f"{motor},1,-500")
-                read_response()
+                response_display.update(read_response())
 
 
 if __name__ == "__main__":
