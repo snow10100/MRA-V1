@@ -1,26 +1,111 @@
-# Example command:
-# docker compose run cpu
-#   
-# source: https://raw.githubusercontent.com/ros-planning/moveit2_tutorials/main/_scripts/docker-compose.yml
+# MRA-V1 Robotic Arm Docker Compose Configuration
+# 
+# Quick Launch Commands:
+# docker compose run dev                    # Development shell (CPU)
+# docker compose run sim                    # Gazebo simulation only
+# docker compose run moveit-sim             # MoveIt + Gazebo simulation
+# docker compose run hardware               # Hardware control only  
+# docker compose run moveit-hardware        # MoveIt + hardware control
+# docker compose run gpu-dev                # Development shell (GPU)
+# 
+# With custom launch modes:
+# docker compose run -e LAUNCH_MODE=gazebo sim
+# docker compose run -e LAUNCH_MODE=moveit-gazebo moveit-sim
 
 services:
-  cpu:
-    privileged: true # becareful with this
+  # Base development environment (CPU)
+  dev:
+    privileged: true
     network_mode: host
-    image: osrf/ros:iron-desktop-full
+    image: osrf/ros:jazzy-desktop-full
+    command: /bin/bash
     volumes:
+      - .:/workspace
       - ros2-data:/root
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $XAUTHORITY:/root/.Xauthority
+      - /dev:/dev  # For hardware access
     environment:
       QT_X11_NO_MITSHM: 1
       DISPLAY: $DISPLAY
+      ROS_WORKSPACE: /workspace
+    working_dir: /workspace
 
-  gpu:
-    image: osrf/ros:iron-desktop-full
+  # Gazebo simulation only
+  sim:
+    extends: dev
+    environment:
+      QT_X11_NO_MITSHM: 1
+      DISPLAY: $DISPLAY
+      ROS_WORKSPACE: /workspace
+      LAUNCH_MODE: ${LAUNCH_MODE:-gazebo}
+    command: >
+      bash -c "
+        source /opt/ros/jazzy/setup.bash &&
+        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        case \"$$LAUNCH_MODE\" in
+          gazebo)
+            echo 'Launching Gazebo simulation with robot arm...' &&
+            ros2 launch arm_desc gazebo.launch.py world:=/workspace/worlds/arm_workspace.world
+            ;;
+          *)
+            echo 'Starting Gazebo simulation...' &&
+            gazebo --verbose /workspace/worlds/arm_workspace.world
+            ;;
+        esac
+      "
+
+  # MoveIt + Gazebo simulation
+  moveit-sim:
+    extends: dev
+    environment:
+      QT_X11_NO_MITSHM: 1
+      DISPLAY: $DISPLAY
+      ROS_WORKSPACE: /workspace
+      LAUNCH_MODE: ${LAUNCH_MODE:-moveit-gazebo}
+    command: >
+      bash -c "
+        source /opt/ros/jazzy/setup.bash &&
+        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        echo 'Launching MoveIt with Gazebo simulation...' &&
+        ros2 launch arm_moveit_config gazebo_demo.launch.py
+      "
+
+  # Hardware control only
+  hardware:
+    extends: dev
     privileged: true
-    network_mode: host
-    command: /bin/bash
+    environment:
+      QT_X11_NO_MITSHM: 1
+      DISPLAY: $DISPLAY
+      ROS_WORKSPACE: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/jazzy/setup.bash &&
+        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        echo 'Starting hardware interface...' &&
+        ros2 launch arm_6dof arm_control.launch.py
+      "
+
+  # MoveIt + Hardware control
+  moveit-hardware:
+    extends: dev
+    privileged: true
+    environment:
+      QT_X11_NO_MITSHM: 1
+      DISPLAY: $DISPLAY
+      ROS_WORKSPACE: /workspace
+    command: >
+      bash -c "
+        source /opt/ros/jazzy/setup.bash &&
+        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        echo 'Launching MoveIt with hardware control...' &&
+        ros2 launch arm_moveit_config demo_real.launch.py
+      "
+
+  # GPU-enabled development environment
+  gpu-dev:
+    extends: dev
     deploy:
       resources:
         reservations:
@@ -28,13 +113,10 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    volumes:
-      - ros2-data:/root
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - $XAUTHORITY:/root/.Xauthority
     environment:
       QT_X11_NO_MITSHM: 1
       DISPLAY: $DISPLAY
+      ROS_WORKSPACE: /workspace
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: all
 volumes:

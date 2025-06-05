@@ -1,0 +1,292 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="arm_workspace">
+    <!-- Physics settings -->
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <!-- Scene settings -->
+    <scene>
+      <ambient>0.4 0.4 0.4 1.0</ambient>
+      <background>0.7 0.7 0.7 1.0</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <!-- Sun light -->
+    <light name="sun" type="directional">
+      <pose>0 0 10 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1.0</intensity>
+      <direction>-0.5 0.1 -0.9</direction>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+    </light>
+
+    <!-- Ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Work table -->
+    <model name="work_table">
+      <pose>0.5 0 0.4 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1.2 0.8 0.8</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1.2 0.8 0.8</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.3 0.2 1</ambient>
+            <diffuse>0.7 0.4 0.3 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Red box target object -->
+    <model name="red_box">
+      <pose>0.6 0.2 0.85 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.1</mass>
+          <inertia>
+            <ixx>0.0001</ixx>
+            <iyy>0.0001</iyy>
+            <izz>0.0001</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.0 0.0 1</ambient>
+            <diffuse>1.0 0.0 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Blue cylinder target object -->
+    <model name="blue_cylinder">
+      <pose>0.4 -0.2 0.84 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.15</mass>
+          <inertia>
+            <ixx>0.0002</ixx>
+            <iyy>0.0002</iyy>
+            <izz>0.0001</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <radius>0.03</radius>
+              <length>0.08</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.03</radius>
+              <length>0.08</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.0 0.0 0.8 1</ambient>
+            <diffuse>0.0 0.0 1.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Green sphere target object -->
+    <model name="green_sphere">
+      <pose>0.7 -0.1 0.83 0 0 0</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.08</mass>
+          <inertia>
+            <ixx>0.00008</ixx>
+            <iyy>0.00008</iyy>
+            <izz>0.00008</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <sphere>
+              <radius>0.025</radius>
+            </sphere>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <sphere>
+              <radius>0.025</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>0.0 0.8 0.0 1</ambient>
+            <diffuse>0.0 1.0 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Yellow box obstacle -->
+    <model name="yellow_obstacle">
+      <pose>0.3 0.3 0.86 0 0 0.785</pose>
+      <link name="link">
+        <inertial>
+          <mass>0.2</mass>
+          <inertia>
+            <ixx>0.0003</ixx>
+            <iyy>0.0003</iyy>
+            <izz>0.0001</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>0.08 0.04 0.12</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.08 0.04 0.12</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>1.0 1.0 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Container/tray for objects -->
+    <model name="container_tray">
+      <pose>0.2 0 0.82 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <collision name="bottom">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.15 0.01</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="wall1">
+          <pose>0.07 0 0.015 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.15 0.03</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="wall2">
+          <pose>-0.07 0 0.015 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.15 0.03</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="wall3">
+          <pose>0 0.07 0.015 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.01 0.03</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="wall4">
+          <pose>0 -0.07 0.015 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.01 0.03</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="bottom">
+          <pose>0 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.15 0.01</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.4 0.4 0.4 1</ambient>
+            <diffuse>0.6 0.6 0.6 1</diffuse>
+          </material>
+        </visual>
+        <visual name="walls">
+          <pose>0 0 0.015 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.15 0.15 0.03</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.4 0.4 0.4 0.8</ambient>
+            <diffuse>0.6 0.6 0.6 0.8</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Plugin for Gazebo ROS integration -->
+    <plugin filename="libgazebo_ros_init.so" name="gazebo_ros_init"/>
+    <plugin filename="libgazebo_ros_factory.so" name="gazebo_ros_factory"/>
+
+  </world>
+</sdf>

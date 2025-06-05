@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robotic_arm">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+    <xacro:arg name="device" default="/dev/ttyACM0" />
+    <xacro:arg name="baudrate" default="9600" />
+
+    <!-- Import robotic_arm urdf file -->
+    <xacro:include filename="$(find arm_desc)/urdf/robot.urdf" />
+
+    <!-- Import control_xacro for real hardware -->
+    <xacro:include filename="robotic_arm_real.ros2_control.xacro" />
+
+    <xacro:robotic_arm_real_ros2_control 
+        name="RealSystem" 
+        initial_positions_file="$(arg initial_positions_file)"
+        device="$(arg device)"
+        baudrate="$(arg baudrate)" />
+
+</robot>
