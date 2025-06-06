@@ -8,9 +8,9 @@ This is a 6-DOF robotic arm project that integrates ROS2 Control with both Ardui
 
 ## System Requirements
 
-- **ROS2**: Jazzy Jalapa (latest stable LTS release)
-- **Gazebo**: Gazebo Garden (compatible with ROS2 Jazzy)
-- **OS**: Ubuntu 24.04 LTS (recommended for ROS2 Jazzy)
+- **ROS2**: Kilted Kaiju (latest stable LTS release)
+- **Gazebo**: Gazebo Garden (GZ) - compatible with ROS2 Kilted
+- **OS**: Ubuntu 24.04 LTS (recommended for ROS2 Kilted)
 - **Hardware**: Custom 3D printed 6-DOF robotic arm with Arduino control
 
 ## Build Commands
@@ -35,6 +35,9 @@ source install/setup.bash
 
 #### Quick Launch Commands
 ```bash
+# Build packages first (recommended)
+docker compose run build                  # Build all ROS2 packages
+
 # Development environments
 docker compose run dev                    # Development shell (CPU)
 docker compose run gpu-dev                # Development shell (GPU)
@@ -153,10 +156,11 @@ python3 cont_ds4.py
 - Communication: `/dev/ttyACM0` at 9600 baud
 
 ### Simulation Features
-- **Physics Engine**: Gazebo Garden with realistic joint dynamics
+- **Physics Engine**: Gazebo Garden (GZ) with realistic joint dynamics
 - **Collision Detection**: Accurate collision meshes for path planning
 - **Sensor Simulation**: Support for camera, lidar, and other sensors
-- **Plugin System**: Custom Gazebo plugins for specialized behaviors
+- **Plugin System**: Custom GZ plugins for specialized behaviors
+- **Modern Interface**: Uses `gz sim` command instead of legacy `gazebo`
 - **Workspace Environment**: Pre-configured world with work table and manipulatable objects:
   - Red box, blue cylinder, green sphere (target objects)
   - Yellow obstacle box for path planning challenges

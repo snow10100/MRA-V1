@@ -2,8 +2,8 @@
 
 A comprehensive robotic arm project integrating **ROS2 Control**, **MoveIt2**, **Gazebo simulation**, and **Arduino hardware control**. This project supports both real hardware operation and physics-based simulation for development and testing.
 
-![ROS2 Jazzy](https://img.shields.io/badge/ROS2-Jazzy-blue)
-![Gazebo Garden](https://img.shields.io/badge/Gazebo-Garden-green)
+![ROS2 Kilted](https://img.shields.io/badge/ROS2-Kilted-blue)
+![Gazebo Garden](https://img.shields.io/badge/GZ-Garden-green)
 ![Arduino](https://img.shields.io/badge/Arduino-Compatible-red)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
@@ -12,11 +12,14 @@ A comprehensive robotic arm project integrating **ROS2 Control**, **MoveIt2**, *
 ### Prerequisites
 - **Docker** and **Docker Compose** (recommended)
 - **Ubuntu 24.04 LTS** (for native installation)
-- **ROS2 Jazzy Jalapa** + **Gazebo Garden** (for native installation)
+- **ROS2 Kilted Kaiju** + **Gazebo Garden (GZ)** (for native installation)
 
 ### Launch Commands
 
 ```bash
+# 🔨 Build First (recommended)
+docker compose run build                  # Build all ROS2 packages
+
 # 🎮 Simulation Mode
 docker compose run sim                    # Gazebo simulation only
 docker compose run moveit-sim             # MoveIt + Gazebo simulation
@@ -48,11 +51,11 @@ MRA-V1/
 
 ### Dual Operation Modes
 
-#### 🎯 Simulation Mode (Gazebo)
-- **Physics Engine**: Gazebo Garden with realistic joint dynamics
+#### 🎯 Simulation Mode (GZ/Gazebo)
+- **Physics Engine**: Gazebo Garden (GZ) with realistic joint dynamics
 - **Workspace Environment**: Pre-configured world with manipulatable objects
 - **Path Planning**: Collision detection with accurate meshes
-- **Control Flow**: `Gazebo → ROS2 Control → MoveIt2`
+- **Control Flow**: `GZ Sim → ROS2 Control → MoveIt2`
 
 #### ⚙️ Hardware Mode (Arduino)
 - **Hardware**: Custom 3D printed 6-DOF robotic arm

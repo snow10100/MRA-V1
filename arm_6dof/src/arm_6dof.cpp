@@ -20,6 +20,7 @@
 #include "arm_6dof/arm_6dof.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "io_context/io_context.hpp"
 
 namespace arm_6dof
 {
@@ -55,6 +56,9 @@ hardware_interface::CallbackReturn Arm6DOF::on_init(
   // Store previous commands to detect changes
   prev_commands_.resize(info_.joints.size(), 0.0);
 
+  // Initialize IO context for serial driver
+  io_context_ = std::make_shared<IoContext>(1);
+
   return CallbackReturn::SUCCESS;
 }
 
@@ -75,18 +79,18 @@ hardware_interface::CallbackReturn Arm6DOF::on_configure(
 
   RCLCPP_INFO(rclcpp::get_logger("Arm6DOF"), "Connecting to %s at %d baud", port.c_str(), baudrate);
 
-  // Initialize the serial port
+  // Initialize the serial driver
   try {
-    serial_port_.setPort(port);
-    serial_port_.setBaudrate(baudrate);
-    serial::Timeout timeout = serial::Timeout::simpleTimeout(1000);
-    serial_port_.setTimeout(timeout);
-    serial_port_.open();
+    drivers::serial_driver::SerialPortConfig config(
+      baudrate,
+      drivers::serial_driver::FlowControl::NONE,
+      drivers::serial_driver::Parity::NONE,
+      drivers::serial_driver::StopBits::ONE
+    );
     
-    if (!serial_port_.isOpen()) {
-      RCLCPP_ERROR(rclcpp::get_logger("Arm6DOF"), "Failed to open serial port %s", port.c_str());
-      return CallbackReturn::ERROR;
-    }
+    serial_driver_ = std::make_unique<drivers::serial_driver::SerialDriver>(*io_context_);
+    serial_driver_->init_port(port, config);
+    serial_driver_->port()->open();
     
     RCLCPP_INFO(rclcpp::get_logger("Arm6DOF"), "Successfully connected to Arduino");
     
@@ -96,7 +100,7 @@ hardware_interface::CallbackReturn Arm6DOF::on_configure(
     // Query current positions from Arduino
     queryCurrentPositions();
     
-  } catch (const serial::IOException &e) {
+  } catch (const std::exception &e) {
     RCLCPP_ERROR(rclcpp::get_logger("Arm6DOF"), "Unable to open port %s: %s", port.c_str(), e.what());
     return CallbackReturn::ERROR;
   }
@@ -158,9 +162,12 @@ hardware_interface::CallbackReturn Arm6DOF::on_deactivate(
   
   // Stop all motors
   try {
-    for (size_t i = 0; i < hw_commands_.size(); ++i) {
-      std::string command = "M" + std::to_string(i+1) + ",1,STOP\n";
-      serial_port_.write(command);
+    if (serial_driver_ && serial_driver_->port()->is_open()) {
+      for (size_t i = 0; i < hw_commands_.size(); ++i) {
+        std::string command = "M" + std::to_string(i+1) + ",1,STOP\n";
+        std::vector<uint8_t> data(command.begin(), command.end());
+        serial_driver_->port()->send(data);
+      }
     }
   } catch (const std::exception& e) {
     RCLCPP_WARN(rclcpp::get_logger("Arm6DOF"), "Failed to stop motors: %s", e.what());
@@ -178,15 +185,14 @@ hardware_interface::return_type Arm6DOF::read(
   
   // Query positions every 100ms to avoid overwhelming the Arduino
   if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_read).count() > 100) {
-    if (serial_port_.isOpen()) {
+    if (serial_driver_ && serial_driver_->port()->is_open()) {
       try {
         queryCurrentPositions();
         last_read = now;
       } catch (const std::exception& e) {
-        RCLCPP_WARN_THROTTLE(rclcpp::get_logger("Arm6DOF"), 
-                             *rclcpp::Clock().get_clock(), 
-                             5000, 
-                             "Failed to read from Arduino: %s", e.what());
+        static auto logger = rclcpp::get_logger("Arm6DOF");
+        static auto clock = rclcpp::Clock();
+        RCLCPP_WARN_THROTTLE(logger, clock, 5000, "Failed to read from Arduino: %s", e.what());
       }
     }
   }
@@ -197,7 +203,7 @@ hardware_interface::return_type Arm6DOF::read(
 hardware_interface::return_type Arm6DOF::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  if (!serial_port_.isOpen()) {
+  if (!serial_driver_ || !serial_driver_->port()->is_open()) {
     return hardware_interface::return_type::ERROR;
   }
 
@@ -212,7 +218,8 @@ hardware_interface::return_type Arm6DOF::write(
         
         // Use moveTo command (M1,2,steps) for position control
         std::string command = "M" + std::to_string(i+1) + ",2," + std::to_string(steps) + "\n";
-        serial_port_.write(command);
+        std::vector<uint8_t> data(command.begin(), command.end());
+        serial_driver_->port()->send(data);
         
         prev_commands_[i] = hw_commands_[i];
         
@@ -221,10 +228,9 @@ hardware_interface::return_type Arm6DOF::write(
       }
     }
   } catch (const std::exception& e) {
-    RCLCPP_ERROR_THROTTLE(rclcpp::get_logger("Arm6DOF"), 
-                          *rclcpp::Clock().get_clock(), 
-                          1000, 
-                          "Failed to write to Arduino: %s", e.what());
+    static auto logger = rclcpp::get_logger("Arm6DOF");
+    static auto clock = rclcpp::Clock();
+    RCLCPP_ERROR_THROTTLE(logger, clock, 1000, "Failed to write to Arduino: %s", e.what());
     return hardware_interface::return_type::ERROR;
   }
 
@@ -233,16 +239,14 @@ hardware_interface::return_type Arm6DOF::write(
 
 void Arm6DOF::queryCurrentPositions()
 {
-  if (!serial_port_.isOpen()) return;
+  if (!serial_driver_ || !serial_driver_->port()->is_open()) return;
   
   try {
-    // Clear input buffer
-    serial_port_.flushInput();
-    
     // Query each joint position
     for (size_t i = 0; i < hw_states_.size(); ++i) {
       std::string query = "M" + std::to_string(i+1) + ",3\n";
-      serial_port_.write(query);
+      std::vector<uint8_t> data(query.begin(), query.end());
+      serial_driver_->port()->send(data);
       
       // Small delay between queries
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -251,8 +255,11 @@ void Arm6DOF::queryCurrentPositions()
     // Read responses
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     
-    if (serial_port_.available()) {
-      std::string response = serial_port_.read(serial_port_.available());
+    // Try to receive data
+    std::vector<uint8_t> buffer;
+    serial_driver_->port()->receive(buffer);
+    if (!buffer.empty()) {
+      std::string response(buffer.begin(), buffer.end());
       parsePositionResponse(response);
     }
     

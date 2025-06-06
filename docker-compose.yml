@@ -15,9 +15,9 @@
 services:
   # Base development environment (CPU)
   dev:
+    build: .
     privileged: true
     network_mode: host
-    image: osrf/ros:jazzy-desktop-full
     command: /bin/bash
     volumes:
       - .:/workspace
@@ -41,16 +41,19 @@ services:
       LAUNCH_MODE: ${LAUNCH_MODE:-gazebo}
     command: >
       bash -c "
-        source /opt/ros/jazzy/setup.bash &&
-        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        source /opt/ros/kilted/setup.bash &&
+        echo 'Building ROS2 packages...' &&
+        cd /workspace &&
+        colcon build --packages-select arm_6dof arm_desc arm_moveit_config &&
+        source install/setup.bash &&
         case \"$$LAUNCH_MODE\" in
           gazebo)
             echo 'Launching Gazebo simulation with robot arm...' &&
-            ros2 launch arm_desc gazebo.launch.py world:=/workspace/worlds/arm_workspace.world
+            ros2 launch arm_desc gazebo.launch.py
             ;;
           *)
             echo 'Starting Gazebo simulation...' &&
-            gazebo --verbose /workspace/worlds/arm_workspace.world
+            gz sim /workspace/worlds/arm_workspace.world
             ;;
         esac
       "
@@ -65,10 +68,13 @@ services:
       LAUNCH_MODE: ${LAUNCH_MODE:-moveit-gazebo}
     command: >
       bash -c "
-        source /opt/ros/jazzy/setup.bash &&
-        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        source /opt/ros/kilted/setup.bash &&
+        echo 'Building ROS2 packages...' &&
+        cd /workspace &&
+        colcon build --packages-select arm_6dof arm_desc arm_moveit_config &&
+        source install/setup.bash &&
         echo 'Launching MoveIt with Gazebo simulation...' &&
-        ros2 launch arm_moveit_config gazebo_demo.launch.py
+        ros2 launch arm_moveit_config demo.launch.py
       "
 
   # Hardware control only
@@ -81,10 +87,14 @@ services:
       ROS_WORKSPACE: /workspace
     command: >
       bash -c "
-        source /opt/ros/jazzy/setup.bash &&
-        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        source /opt/ros/kilted/setup.bash &&
+        echo 'Building ROS2 packages...' &&
+        cd /workspace &&
+        colcon build --packages-select arm_6dof arm_desc arm_moveit_config &&
+        source install/setup.bash &&
         echo 'Starting hardware interface...' &&
-        ros2 launch arm_6dof arm_control.launch.py
+        echo 'Note: Hardware launch file needs to be created' &&
+        ros2 run arm_6dof arm_6dof_node
       "
 
   # MoveIt + Hardware control
@@ -97,8 +107,11 @@ services:
       ROS_WORKSPACE: /workspace
     command: >
       bash -c "
-        source /opt/ros/jazzy/setup.bash &&
-        if [ -f install/setup.bash ]; then source install/setup.bash; fi &&
+        source /opt/ros/kilted/setup.bash &&
+        echo 'Building ROS2 packages...' &&
+        cd /workspace &&
+        colcon build --packages-select arm_6dof arm_desc arm_moveit_config &&
+        source install/setup.bash &&
         echo 'Launching MoveIt with hardware control...' &&
         ros2 launch arm_moveit_config demo_real.launch.py
       "

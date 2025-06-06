@@ -11,7 +11,7 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(serial REQUIRED)
+find_package(serial_driver REQUIRED)
 
 
 add_library(
@@ -29,7 +29,7 @@ ament_target_dependencies(
   hardware_interface
   rclcpp
   rclcpp_lifecycle
-  serial
+  serial_driver
 )
 # prevent pluginlib from using boost
 target_compile_definitions(arm_6dof PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
